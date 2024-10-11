@@ -8,88 +8,43 @@
 #include <unordered_map>
 
 using namespace std;
-void censorShip(){
-    locale::global(locale(""));
-    wifstream inFile("arabic text.txt");
-    wifstream censorFile("censorFile.txt");
-    inFile.imbue(locale(inFile.getloc(), new codecvt_utf8<wchar_t>));
-
-    if (inFile.fail()) {
-        cout << "Opening failed, please try again!" << endl;
-    } else {
-        cout << "File opened successfully!\n";
-    }
-
-    wstring arabic_text, sentence;
-    censorFile.imbue(locale(censorFile.getloc(), new codecvt_utf8<wchar_t>));
-    while (getline(inFile, sentence)) {
-        arabic_text += sentence + L"\n";
-    }
-    unordered_map<wstring, wstring> censorMap;
-    wstring wordKey, alter;
-    while (censorFile >> wordKey >> alter) {
-        censorMap[wordKey] = alter;
-    }
-
-//    for (const auto& pair : censorMap) {
-//        wcout << L"Censor word: " << pair.first << L", Replace with: " << pair.second << endl;
-//    }
-
-    for (const auto& pair : censorMap) {
-        size_t pos = arabic_text.find(pair.first);
-        // Replace all occurrences of the censor word
-        while (pos != wstring::npos) {
-            arabic_text.replace(pos, pair.first.length(), pair.second);
-            pos = arabic_text.find(pair.first, pos + pair.second.length());
-        }
-    }
-
-    wcout.imbue(locale(""));
-    wcout << L"Modified Arabic Text:\n" << arabic_text << endl;
-
-    // Output file for the censored Arabic text
-    wofstream outFile("goodArabicText.txt");
-    outFile.imbue(locale(outFile.getloc(), new codecvt_utf8<wchar_t>));
-//    while (!outFile.eof() && !outFile.fail()){
-//        getline(outFile, text);
-//        wcout << text;
-//    }
-
-    // Write the modified text to the output file
-    outFile << arabic_text;
-    inFile.close();
-    censorFile.close();
-    outFile.close();
-}
 void correction(){
     char c;
     string output;
+    // Bool var to control spaces in the sentence
     bool space = false;
+    // Bool var to control first space in the sentence
     bool first_space = true;
     cout << "Enter your sentence that ends with a '.' :-\n";
     for (int i = 0; i < 100; ++i) {
         cin.get(c);
         if(c == '.'){
-            // To remove the last character before space in output if it's space
+            // To remove the last character before space in output if it's dot
             if(isspace(output.back())){
                 output.pop_back();
             }
             output += c;
             break;
         }
+        // Check if it's space at the beginning
         if(isspace(c) && first_space){
             continue;
         }
+        // If it's more than one space set it to one space
         if(isspace(c)){
             if(!space){
+                // Add one space to the output then set space to true to stop adding spaces
                 output += ' ';
                 space = true;
             }
         }else if(isalpha(c)){
+            // Set all characters to lower case
             output += (char)tolower(c);
+            // Set first space to default
             space = false;
             first_space = false;
         }else{
+            // No condition existed
             output += c;
             space = false;
         }
@@ -145,19 +100,13 @@ void SieveOfEratosthenes(){
     cout << endl;
 }
 
-// A structure to store the items of domino
 struct dominoT {
     int leftDots;
     int rightDots;
 };
 
-// To flip a domino and try each side
-dominoT flipDomino(dominoT domino) {
-    return {domino.rightDots, domino.leftDots};
-}
-
 // Recursive function that compare each side of the domino with others
-bool trackDomino(const vector<dominoT>& domino, vector<bool>& used, vector<dominoT>& chain, int len) {
+bool trackDomino(vector<dominoT>& domino, vector<bool>& used, int len) {
     // when the len var reaches the size of domino vector; so the chain is successfully formed
     if (len == domino.size()) {
         return true;
@@ -166,27 +115,18 @@ bool trackDomino(const vector<dominoT>& domino, vector<bool>& used, vector<domin
     // Loop on all the unused dominoes
     for (int i = 0; i < domino.size(); i++) {
         if (!used[i]) {
-            // Try both sides of each domino
-            for (int j = 0; j < 2; j++) {
-                // when j = 0 it's in the original position, j = 1 when flipped
-                dominoT sidePos = (j == 0) ? domino[i] : flipDomino(domino[i]);
-
-                // Check if it can be placed in the chain
-                if (len == 0 || chain.back().rightDots == sidePos.leftDots) {
-                    // When the domino can be placed; add it to the chain and mark as used
-                    used[i] = true;
-                    chain.push_back(sidePos);
-
-                    // recursion to call itself back for the next domino
-                    if (trackDomino(domino, used, chain, len + 1)) {
-                        // A valid chain is found
-                        return true;
-                    }
-
-                    // "Backtrack" to remove the last domino from the chain and mark as unused
-                    chain.pop_back();
-                    used[i] = false;
+            // Check if the current domino can be placed in the chain
+            if (len == 0 || domino.back().rightDots == domino[i].leftDots) {
+                // When the domino can be placed; add it to the chain and mark as used
+                used[i] = true;
+                // recursion to call itself back for the next domino
+                if (trackDomino(domino, used, len + 1)) {
+                    // A valid chain is found
+                    return true;
                 }
+
+                // "Backtrack" to remove the last domino from the chain and mark as unused
+                used[i] = false;
             }
         }
     }
@@ -195,21 +135,19 @@ bool trackDomino(const vector<dominoT>& domino, vector<bool>& used, vector<domin
 }
 
 // The entry point function to check if a domino chain can be formed
-bool FormsDominoChain(const vector<dominoT>& domino, vector<dominoT>& chain) {
+bool FormsDominoChain(vector<dominoT>& domino){
     // Initialize a vector and Set its default to false
     vector<bool> used(domino.size(), false);
 
     for (int i = 0; i < domino.size(); ++i) {
         used[i] = true;
-        chain.push_back(domino[i]);
 
         // Start tracking with the first domino
-        if (trackDomino(domino, used, chain, 1)) {
+        if (trackDomino(domino, used, 1)) {
             // A valid chain is found
             return true;
         }
         // "Backtrack" to remove the last domino from the chain and mark as unused
-        chain.pop_back();
         used[i] = false;
     }
     // No valid chain is formed
@@ -230,29 +168,23 @@ void start() {
             continue;
         }
 
-        // A vector to add the inputs in it
         vector<dominoT> domino(n);
         cout << "Enter the left and right number of each domino (0 -> 6):\n";
         for (int i = 0; i < n; ++i) {
             cin >> domino[i].leftDots >> domino[i].rightDots;
-            // Validation for the inputs of the dominoes
             if (cin.fail() || domino[i].leftDots < 0 || domino[i].leftDots > 6 || domino[i].rightDots < 0 || domino[i].rightDots > 6) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Please, enter a valid number!" << endl;
-                // Return back to the correct index
                 --i;
                 continue;
             }
         }
 
-        // A vector to add in it the correct chain
-        vector<dominoT> chain;
-        // Print the new chain if it's  valid
-        if (FormsDominoChain(domino, chain)) {
+        if (FormsDominoChain(domino)) {
             cout << "A chain is formed successfully:\n";
             for (int i = 0; i < n; ++i) {
-                cout << chain[i].leftDots << "|" << chain[i].rightDots;
+                cout << domino[i].leftDots << "|" << domino[i].rightDots;
                 if (i != n - 1) {
                     cout << " - ";
                 }
@@ -264,12 +196,71 @@ void start() {
         break;
     }
 }
+void censorShip(){
+    // To support unicode and handle arabic text
+    locale::global(locale(""));
+    wifstream censorFile("censorFile.txt");
+
+    string inFileName;
+    wcout << L"Enter the file name that contain the arabic text:\n";
+    cin.ignore();
+    wifstream inFile;
+    while(true){
+        getline(cin, inFileName);
+        inFile.open(inFileName);
+        if (inFile.fail()) {
+            cout << "Opening failed, enter the name correctly!" << endl;
+            continue;
+        } else {
+            cout << "File opened successfully!\n";
+            break;
+        }
+    }
+    inFile.imbue(locale(inFile.getloc(), new codecvt_utf8<wchar_t>));
+
+    wstring arabic_text, sentence;
+    censorFile.imbue(locale(censorFile.getloc(), new codecvt_utf8<wchar_t>));
+    while (getline(inFile, sentence)) {
+        arabic_text += sentence + L"\n";
+    }
+    // A map to store all the censored words and their alternatives
+    unordered_map<wstring, wstring> censorMap;
+    wstring wordKey, alter;
+    while (censorFile >> wordKey >> alter) {
+        censorMap[wordKey] = alter;
+    }
+    for (const auto& words : censorMap) {
+        size_t pos = arabic_text.find(words.first);
+        // Replace all the censored words
+        while (pos != wstring::npos) {
+            arabic_text.replace(pos, words.first.length(), words.second);
+            pos = arabic_text.find(words.first, pos + words.second.length());
+        }
+    }
+
+    string outFileName;
+    cout << "Enter the name of the new file:\n";
+    getline(cin, outFileName);
+    wofstream outFile(outFileName);
+
+    cout << "File is formed successfully\n";
+    // Output file for the censored Arabic text
+    outFile.imbue(locale(outFile.getloc(), new codecvt_utf8<wchar_t>));
+
+    // Write the modified text to the output file
+    outFile << arabic_text;
+    // Close all opened files
+    inFile.close();
+    censorFile.close();
+    outFile.close();
+}
 int main() {
-    cout << "Welcome, ";
+    cout << "Welcome to the program :)\n";
     char choice;
     while(true){
+        cout << "------------------------------------------------\n";
         cout << "Choose the program you need:\na-Correct your sentence\n"
-                "b-Get prime numbers to n\nc-Dominos game\nd-Message altering to avoid censorship\ne-Exit\n";
+                "b-Get prime numbers to n\nc-Dominoes game\nd-Message altering to avoid censorship\ne-Exit\n";
         cin >> choice;
         switch (tolower(choice)) {
             case 'a':
