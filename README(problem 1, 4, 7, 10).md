@@ -35,8 +35,8 @@ This C++ program is a multi-functional console-based application that provides s
 ### Instructions
 1. **Clone the repository**:
    ```
-  git clone https://github.com/nadaamiin/Assignment-1  
-   ```
+git clone https://github.com/nadaamiin/Assignment-1.git
+cd Assignment-1   ```
 
 2. **Compile the program**:
    ```
@@ -88,9 +88,10 @@ Upon running the program, you will be greeted with a menu where you can select o
    - Output: `"A chain is formed successfully: 1|2 - 2|3 - 3|1"`.
 
 4. **Text Censorship**:
-   - User enters: `d`.
+   - User enters: The file name the input file that contains the Arabic text.
    - Input file: `arabic_text.txt`.
    - The program censors the text based on `censorFile.txt` and writes the result to a new file.
+   -  output file: The user will create it
 
 ### Sample Censorship File (`censorFile.txt`)
 ```plaintext
