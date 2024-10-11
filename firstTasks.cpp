@@ -50,6 +50,9 @@ void correction(){
         }
     }
     output[0] = (char)toupper(output[0]);
+    if(output.back() != '.'){
+        output.push_back('.');
+    }
     cout << output << endl;
     // To discard any characters after the point and don't disturb the menu
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -100,13 +103,14 @@ void SieveOfEratosthenes(){
     cout << endl;
 }
 
+// A structure to store the items of domino
 struct dominoT {
     int leftDots;
     int rightDots;
 };
 
 // Recursive function that compare each side of the domino with others
-bool trackDomino(vector<dominoT>& domino, vector<bool>& used, int len) {
+bool trackDomino(const vector<dominoT>& domino, vector<bool>& used, vector<dominoT>& chain, int len) {
     // when the len var reaches the size of domino vector; so the chain is successfully formed
     if (len == domino.size()) {
         return true;
@@ -116,16 +120,19 @@ bool trackDomino(vector<dominoT>& domino, vector<bool>& used, int len) {
     for (int i = 0; i < domino.size(); i++) {
         if (!used[i]) {
             // Check if the current domino can be placed in the chain
-            if (len == 0 || domino.back().rightDots == domino[i].leftDots) {
+            if (len == 0 || chain.back().rightDots == domino[i].leftDots) {
                 // When the domino can be placed; add it to the chain and mark as used
                 used[i] = true;
+                chain.push_back(domino[i]);
+
                 // recursion to call itself back for the next domino
-                if (trackDomino(domino, used, len + 1)) {
+                if (trackDomino(domino, used, chain, len + 1)) {
                     // A valid chain is found
                     return true;
                 }
 
                 // "Backtrack" to remove the last domino from the chain and mark as unused
+                chain.pop_back();
                 used[i] = false;
             }
         }
@@ -135,19 +142,21 @@ bool trackDomino(vector<dominoT>& domino, vector<bool>& used, int len) {
 }
 
 // The entry point function to check if a domino chain can be formed
-bool FormsDominoChain(vector<dominoT>& domino){
+bool FormsDominoChain(const vector<dominoT>& domino, vector<dominoT>& chain) {
     // Initialize a vector and Set its default to false
     vector<bool> used(domino.size(), false);
 
     for (int i = 0; i < domino.size(); ++i) {
         used[i] = true;
+        chain.push_back(domino[i]);
 
         // Start tracking with the first domino
-        if (trackDomino(domino, used, 1)) {
+        if (trackDomino(domino, used, chain, 1)) {
             // A valid chain is found
             return true;
         }
         // "Backtrack" to remove the last domino from the chain and mark as unused
+        chain.pop_back();
         used[i] = false;
     }
     // No valid chain is formed
@@ -168,23 +177,29 @@ void start() {
             continue;
         }
 
+        // A vector to add the inputs in it
         vector<dominoT> domino(n);
         cout << "Enter the left and right number of each domino (0 -> 6):\n";
         for (int i = 0; i < n; ++i) {
             cin >> domino[i].leftDots >> domino[i].rightDots;
+            // Validation for the inputs of the dominoes
             if (cin.fail() || domino[i].leftDots < 0 || domino[i].leftDots > 6 || domino[i].rightDots < 0 || domino[i].rightDots > 6) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Please, enter a valid number!" << endl;
+                // Return back to the correct index
                 --i;
                 continue;
             }
         }
 
-        if (FormsDominoChain(domino)) {
+        // A vector to add in it the correct chain
+        vector<dominoT> chain;
+        // Print the new chain if it's  valid
+        if (FormsDominoChain(domino, chain)) {
             cout << "A chain is formed successfully:\n";
             for (int i = 0; i < n; ++i) {
-                cout << domino[i].leftDots << "|" << domino[i].rightDots;
+                cout << chain[i].leftDots << "|" << chain[i].rightDots;
                 if (i != n - 1) {
                     cout << " - ";
                 }
@@ -196,28 +211,48 @@ void start() {
         break;
     }
 }
+
 void censorShip(){
     // To support unicode and handle arabic text
     locale::global(locale(""));
     wifstream censorFile("censorFile.txt");
 
+    // Ignore program crashing
+    if (!censorFile.is_open()) {
+        cout << "Error: Unable to open the censor file." << endl;
+        return;
+    }
+    
     string inFileName;
     wcout << L"Enter the file name that contain the arabic text:\n";
-    cin.ignore();
     wifstream inFile;
+    char ch;
     while(true){
-        getline(cin, inFileName);
-        inFile.open(inFileName);
-        if (inFile.fail()) {
-            cout << "Opening failed, enter the name correctly!" << endl;
-            continue;
-        } else {
-            cout << "File opened successfully!\n";
+        cout << "Do want to\na.Use the default arabic file        b.Open your own file:\n";
+        cin >> ch;
+        cin.ignore();
+        if(tolower(ch) == 'a'){
+            inFile.open("arabic text.txt");
+            cout << "The default file is opened!\n";
             break;
+        }else if(tolower(ch) == 'b'){
+            cout << "Enter the name of your own file:\n";
+            getline(cin, inFileName);
+            inFile.open(inFileName);
+            if (inFile.fail()) {
+                cout << "Opening failed, enter the name correctly!" << endl;
+                continue;
+            } else {
+                cout << "File opened successfully!\n";
+                break;
+            }
+        }else{
+            cout << "Enter a valid option";
+            continue;
         }
     }
     inFile.imbue(locale(inFile.getloc(), new codecvt_utf8<wchar_t>));
-
+//    cin.ignore();
     wstring arabic_text, sentence;
     censorFile.imbue(locale(censorFile.getloc(), new codecvt_utf8<wchar_t>));
     while (getline(inFile, sentence)) {
