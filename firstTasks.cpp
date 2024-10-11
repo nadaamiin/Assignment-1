@@ -222,7 +222,7 @@ void censorShip(){
         cout << "Error: Unable to open the censor file." << endl;
         return;
     }
-    
+
     string inFileName;
     wcout << L"Enter the file name that contain the arabic text:\n";
     wifstream inFile;
