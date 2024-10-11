@@ -34,8 +34,10 @@ This C++ program is a multi-functional console-based application that provides s
 
 ### Instructions
 1. **Clone the repository**:
-   ``` git clone https://github.com/nadaamiin/Assignment-1.git
-cd Assignment-1   ```
+   ```
+    git clone https://github.com/nadaamiin/Assignment-1.git
+   cd Assignment-1
+```
 
 2. **Compile the program**:
    ```
