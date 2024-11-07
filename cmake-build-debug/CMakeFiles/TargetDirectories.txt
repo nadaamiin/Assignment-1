@@ -1,3 +1,0 @@
-C:/Users/dell/CLionProjects/lastVole2/lastVole2/cmake-build-debug/CMakeFiles/lastVole.dir
-C:/Users/dell/CLionProjects/lastVole2/lastVole2/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/dell/CLionProjects/lastVole2/lastVole2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
